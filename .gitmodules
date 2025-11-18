@@ -1,3 +1,6 @@
 [submodule "adventure_proto"]
 	path = adventure_proto
 	url = git@github.com:mnstrapp/adventure_proto
+[submodule "migrations"]
+	path = migrations
+	url = git@github.com:mnstrapp/migrations
