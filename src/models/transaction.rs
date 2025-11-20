@@ -1,4 +1,3 @@
-use juniper::{GraphQLEnum, GraphQLObject};
 use serde::{Deserialize, Serialize};
 use sqlx::{
     Encode, Error, Postgres, Row,
@@ -12,15 +11,19 @@ use crate::{
     database::{traits::DatabaseResource, values::DatabaseValue},
     delete_resource_where_fields, find_all_resources_where_fields, find_one_resource_where_fields,
     insert_resource,
-    models::wallet::Wallet,
+    proto::{
+        Transaction as GrpcTransaction, TransactionStatus as GrpcTransactionStatus,
+        TransactionType as GrpcTransactionType,
+    },
     update_resource,
-    utils::time::{deserialize_offset_date_time, serialize_offset_date_time},
+    utils::time::{deserialize_offset_date_time, serialize_offset_date_time, to_prost_timestamp},
 };
 
-#[derive(Debug, Serialize, Deserialize, GraphQLEnum, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, prost::Enumeration)]
+#[prost(String, name = "TransactionType")]
 pub enum TransactionType {
-    Credit,
-    Debit,
+    Credit = 0,
+    Debit = 1,
 }
 
 impl std::fmt::Display for TransactionType {
@@ -56,12 +59,13 @@ impl sqlx::Type<Postgres> for TransactionType {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, GraphQLEnum, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, prost::Enumeration)]
+#[prost(String, name = "TransactionStatus")]
 pub enum TransactionStatus {
-    Preparing,
-    Pending,
-    Completed,
-    Failed,
+    Preparing = 0,
+    Pending = 1,
+    Completed = 2,
+    Failed = 3,
 }
 
 impl std::fmt::Display for TransactionStatus {
@@ -101,7 +105,7 @@ impl sqlx::Type<Postgres> for TransactionStatus {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, GraphQLObject, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Transaction {
     pub id: String,
     pub wallet_id: String,
@@ -139,17 +143,17 @@ impl Transaction {
         }
     }
 
-    pub fn to_grpc(transaction: Self) -> GrpcTransaction {
+    pub fn to_grpc(&self) -> GrpcTransaction {
         GrpcTransaction {
-            id: transaction.id,
-            wallet_id: transaction.wallet_id,
-            amount: transaction.transaction_amount,
-            transaction_type: transaction.transaction_type,
-            transaction_status: transaction.transaction_status,
-            data: transaction.transaction_data.unwrap_or_default(),
-            error_message: transaction.error_message.unwrap_or_default(),
-            created_at: transaction.created_at.unwrap_or_default().to_string(),
-            updated_at: transaction.updated_at.unwrap_or_default().to_string(),
+            id: self.id.clone(),
+            wallet_id: self.wallet_id.clone(),
+            amount: self.transaction_amount,
+            transaction_type: self.transaction_type.clone().into(),
+            transaction_status: self.transaction_status.clone().into(),
+            data: self.transaction_data.clone().unwrap_or_default(),
+            error_message: self.error_message.clone().unwrap_or_default(),
+            created_at: Some(to_prost_timestamp(self.created_at.unwrap())),
+            updated_at: Some(to_prost_timestamp(self.updated_at.unwrap())),
         }
     }
 

@@ -1,4 +1,3 @@
-use juniper::GraphQLObject;
 use serde::{Deserialize, Serialize};
 use sha2::Digest;
 use sqlx::{Error, Row, postgres::PgRow};
@@ -11,9 +10,11 @@ use crate::{
     models::{generated::mnstr_xp::XP_FOR_LEVEL, user::User},
     update_resource,
     utils::time::{deserialize_offset_date_time, serialize_offset_date_time},
+    proto::Mnstr as GrpcMnstr,
+    utils::time::to_prost_timestamp,
 };
 
-#[derive(Debug, Serialize, Deserialize, GraphQLObject, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Mnstr {
     pub id: String,
@@ -26,21 +27,18 @@ pub struct Mnstr {
         serialize_with = "serialize_offset_date_time",
         deserialize_with = "deserialize_offset_date_time"
     )]
-    #[graphql(skip)]
     pub created_at: Option<OffsetDateTime>,
 
     #[serde(
         serialize_with = "serialize_offset_date_time",
         deserialize_with = "deserialize_offset_date_time"
     )]
-    #[graphql(skip)]
     pub updated_at: Option<OffsetDateTime>,
 
     #[serde(
         serialize_with = "serialize_offset_date_time",
         deserialize_with = "deserialize_offset_date_time"
     )]
-    #[graphql(skip)]
     pub archived_at: Option<OffsetDateTime>,
 
     pub current_level: i32,
@@ -160,6 +158,31 @@ impl Mnstr {
                 .unwrap_or(self.experience_to_next_level),
         }
     }
+
+    pub fn to_grpc(&self) -> GrpcMnstr {
+        GrpcMnstr {
+            id: self.id.clone(),
+            user_id: self.user_id.clone(),
+            mnstr_name: self.mnstr_name.clone(),
+            mnstr_description: self.mnstr_description.clone(),
+            mnstr_qr_code: self.mnstr_qr_code.clone(),
+            current_level: self.current_level,
+            current_experience: self.current_experience,
+            current_health: self.current_health,
+            max_health: self.max_health,
+            current_attack: self.current_attack,
+            max_attack: self.max_attack,
+            current_defense: self.current_defense,
+            max_defense: self.max_defense,
+            current_speed: self.current_speed,
+            max_speed: self.max_speed,
+            current_intelligence: self.current_intelligence,
+            max_intelligence: self.max_intelligence,
+            current_magic: self.current_magic,
+            max_magic: self.max_magic,
+            experience_to_next_level: self.experience_to_next_level,
+        }
+    }   
 
     pub async fn create(&mut self) -> Option<anyhow::Error> {
         let params = vec![

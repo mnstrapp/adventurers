@@ -1,25 +1,3 @@
-//! Query Macros for Database Operations
-//!
-//! This module provides macros for finding and retrieving resources from the database.
-//! All macros work with any struct that implements the `DatabaseResource` trait.
-
-/// Finds all resources matching the specified field conditions.
-///
-/// # Arguments
-/// * `$resource` - The resource type (must implement DatabaseResource)
-/// * `$params` - Vector of `(&str, DatabaseValue)` tuples for field conditions
-///
-/// # Returns
-/// `Result<Vec<Resource>, Error>` - Vector of matching resources or database error
-///
-/// # Example
-/// ```rust
-/// let params = vec![
-///     ("user_id", "123".into()),
-///     ("status", "active".into())
-/// ];
-/// let results = find_all_resources_where_fields!(User, params).await?;
-/// ```
 #[macro_export]
 macro_rules! find_all_resources_where_fields {
     ($resource:ty, $params:expr) => {{
@@ -75,22 +53,6 @@ macro_rules! find_all_resources_where_fields {
     }};
 }
 
-/// Finds all unarchived resources matching the specified field conditions.
-///
-/// This macro generates a SELECT query that only returns resources where `archived_at IS NULL`.
-///
-/// # Arguments
-/// * `$resource` - The resource type (must implement DatabaseResource)
-/// * `$params` - Vector of `(&str, DatabaseValue)` tuples for field conditions
-///
-/// # Returns
-/// `Result<Vec<Resource>, Error>` - Vector of unarchived resources or database error
-///
-/// # Example
-/// ```rust
-/// let params = vec![("organization_id", "456".into())];
-/// let active_users = find_all_unarchived_resources_where_fields!(User, params).await?;
-/// ```
 #[macro_export]
 macro_rules! find_all_unarchived_resources_where_fields {
     ($resource:ty, $params:expr) => {{
@@ -144,22 +106,6 @@ macro_rules! find_all_unarchived_resources_where_fields {
     }};
 }
 
-/// Finds all archived resources matching the specified field conditions.
-///
-/// This macro generates a SELECT query that only returns resources where `archived_at IS NOT NULL`.
-///
-/// # Arguments
-/// * `$resource` - The resource type (must implement DatabaseResource)
-/// * `$params` - Vector of `(&str, DatabaseValue)` tuples for field conditions
-///
-/// # Returns
-/// `Result<Vec<Resource>, Error>` - Vector of archived resources or database error
-///
-/// # Example
-/// ```rust
-/// let params = vec![("organization_id", "456".into())];
-/// let deleted_users = find_all_archived_resources_where_fields!(User, params).await?;
-/// ```
 #[macro_export]
 macro_rules! find_all_archived_resources_where_fields {
     ($resource:ty, $params:expr) => {{
@@ -215,23 +161,6 @@ macro_rules! find_all_archived_resources_where_fields {
     }};
 }
 
-/// Finds a single resource matching the specified field conditions.
-///
-/// This macro generates a SELECT query with WHERE clauses and LIMIT 1 to return
-/// exactly one resource. If multiple resources match, only the first one is returned.
-///
-/// # Arguments
-/// * `$resource` - The resource type (must implement DatabaseResource)
-/// * `$params` - Vector of `(&str, DatabaseValue)` tuples for field conditions
-///
-/// # Returns
-/// `Result<Resource, Error>` - Single matching resource or database error
-///
-/// # Example
-/// ```rust
-/// let params = vec![("email", "user@example.com".into())];
-/// let user = find_one_resource_where_fields!(User, params).await?;
-/// ```
 #[macro_export]
 macro_rules! find_one_resource_where_fields {
     ($resource:ty, $params:expr) => {{
@@ -280,23 +209,6 @@ macro_rules! find_one_resource_where_fields {
     }};
 }
 
-/// Finds a single unarchived resource matching the specified field conditions.
-///
-/// This macro generates a SELECT query that returns exactly one unarchived resource
-/// (where `archived_at IS NULL`) with LIMIT 1 for efficiency.
-///
-/// # Arguments
-/// * `$resource` - The resource type (must implement DatabaseResource)
-/// * `$params` - Vector of `(&str, DatabaseValue)` tuples for field conditions
-///
-/// # Returns
-/// `Result<Resource, Error>` - Single unarchived resource or database error
-///
-/// # Example
-/// ```rust
-/// let params = vec![("id", "789".into())];
-/// let active_user = find_one_unarchived_resource_where_fields!(User, params).await?;
-/// ```
 #[macro_export]
 macro_rules! find_one_unarchived_resource_where_fields {
     ($resource:ty, $params:expr) => {{
@@ -345,23 +257,6 @@ macro_rules! find_one_unarchived_resource_where_fields {
     }};
 }
 
-/// Finds a single archived resource matching the specified field conditions.
-///
-/// This macro generates a SELECT query that returns exactly one archived resource
-/// (where `archived_at IS NOT NULL`) with LIMIT 1 for efficiency.
-///
-/// # Arguments
-/// * `$resource` - The resource type (must implement DatabaseResource)
-/// * `$params` - Vector of `(&str, DatabaseValue)` tuples for field conditions
-///
-/// # Returns
-/// `Result<Resource, Error>` - Single archived resource or database error
-///
-/// # Example
-/// ```rust
-/// let params = vec![("id", "789".into())];
-/// let deleted_user = find_one_archived_resource_where_fields!(User, params).await?;
-/// ```
 #[macro_export]
 macro_rules! find_one_archived_resource_where_fields {
     ($resource:ty, $params:expr) => {{
@@ -414,30 +309,6 @@ macro_rules! find_one_archived_resource_where_fields {
     }};
 }
 
-/// Finds all resources matching the specified field conditions with LIKE operator.
-///
-/// This macro generates a SELECT query that returns all resources where the specified fields
-/// contain the search term (case-insensitive).
-///
-/// # Arguments
-/// * `$resource` - The resource type (must implement DatabaseResource)
-/// * `$params` - Vector of `(&str, DatabaseValue)` tuples for field conditions
-///
-/// # Returns
-/// `Result<Vec<Resource>, Error>` - Vector of matching resources or database error
-///
-/// # Example
-/// ```rust
-/// let search_term = "john";
-/// let params = vec![
-///     ("first_name", search_term.clone().into()),
-///     ("last_name", search_term.clone().into()),
-///     ("type", search_term.clone().into()),
-///     ("dob", search_term.clone().into()),
-///     ("source_id", search_term.clone().into()),
-/// ];
-/// let results = find_all_resources_where_fields_like!(OrganizationContact, params).await?;
-/// ```
 #[macro_export]
 macro_rules! find_all_resources_where_fields_like {
     ($resource:ty, $params:expr, $search_term:expr) => {{

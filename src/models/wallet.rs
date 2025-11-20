@@ -1,4 +1,3 @@
-use juniper::GraphQLObject;
 use serde::{Deserialize, Serialize};
 use sqlx::{Error, Row, postgres::PgRow};
 use time::OffsetDateTime;
@@ -9,10 +8,10 @@ use crate::{
     insert_resource,
     models::transaction::{Transaction, TransactionStatus, TransactionType},
     utils::time::{deserialize_offset_date_time, serialize_offset_date_time},
-    proto::wallet::Wallet as GrpcWallet,
+    proto::Wallet as GrpcWallet,
 };
 
-#[derive(Debug, Serialize, Deserialize, GraphQLObject, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Wallet {
     pub id: String,
     pub user_id: String,
@@ -53,12 +52,12 @@ impl Wallet {
         }
     }
 
-    pub fn to_grpc(wallet: Self) -> GrpcWallet {
+    pub fn to_grpc(&self) -> GrpcWallet {
         GrpcWallet {
-            id: wallet.id,
-            user_id: wallet.user_id,
-            coins: wallet.coins,
-            transactions: wallet.transactions.iter().map(|t| t.to_grpc()).collect(),
+            id: self.id.clone(),
+            user_id: self.user_id.clone(),
+            coins: self.coins,
+            transactions: self.transactions.iter().map(|t| t.to_grpc()).collect(),
         }
     }
 

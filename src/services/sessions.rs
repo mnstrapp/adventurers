@@ -1,9 +1,6 @@
-use crate::proto::{
-    ForgotPasswordRequest, ForgotPasswordResponse, LoginRequest, LoginResponse, LogoutRequest,
-    LogoutResponse, RegisterRequest, RegisterResponse, ResetPasswordRequest, ResetPasswordResponse,
-    Session as GrpcSession, User as GrpcUser, Wallet as GrpcWallet, VerifyEmailRequest, VerifyEmailResponse,
-    session_service_server::SessionService,
-};
+use crate::{models::user::User, proto::{
+    ForgotPasswordRequest, ForgotPasswordResponse, LoginRequest, LoginResponse, LogoutRequest, LogoutResponse, RegisterRequest, RegisterResponse, ResetPasswordRequest, ResetPasswordResponse, Session as GrpcSession, User as GrpcUser, VerifyEmailRequest, VerifyEmailResponse, Wallet as GrpcWallet, session_service_server::SessionService
+}, utils::time::to_prost_timestamp};
 
 use tonic::{Request, Response, Status};
 use time::OffsetDateTime;
@@ -17,24 +14,18 @@ impl SessionService for SessionServiceImpl {
         &self,
         _request: Request<RegisterRequest>,
     ) -> Result<Response<RegisterResponse>, Status> {
+        let request = _request.into_inner();
+        let mut user = User::new(
+            Some(request.email),
+            request.phone,
+            request.password,
+            request.display_name,
+        );
+        if let Some(error) = user.create().await {
+            return Err(Status::internal(error.to_string()));
+        }
         Ok(Response::new(RegisterResponse {
-            user: Some(GrpcUser {
-                id: "1".to_string(),
-                display_name: "John Doe".to_string(),
-                email: "john.doe@example.com".to_string(),
-                phone: None,
-                experience_level: 0,
-                experience_points: 0,
-                experience_to_next_level: 0,
-                coins: 0,
-                wallet: Some(GrpcWallet {
-                    id: "1".to_string(),
-                    user_id: "1".to_string(),
-                    coins: 0,
-                    transactions: Vec::new(),
-                }),
-                mnstrs: Vec::new(),
-            }),
+            user: Some(user.to_grpc()),
         }))
     }
 
@@ -63,7 +54,7 @@ impl SessionService for SessionServiceImpl {
                     mnstrs: Vec::new(),
                 }),
                 token: "1234567890".to_string(),
-                expires_at: OffsetDateTime::now_utc().to_string(),
+                expires_at: Some(to_prost_timestamp(OffsetDateTime::now_utc())),
             }),
         }))
     }

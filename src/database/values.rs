@@ -1,92 +1,21 @@
-//! Database Value Types
-//!
-//! This module provides the `DatabaseValue` enum which represents type-safe database values
-//! with proper SQL encoding for PostgreSQL. The enum supports all common database types
-//! and provides convenient `From` implementations for easy conversion from Rust types.
-//!
-//! ## Features
-//!
-//! - **Type Safety**: Proper SQL type encoding for PostgreSQL
-//! - **Null Support**: Handles NULL values appropriately
-//! - **Automatic Conversion**: From implementations for common Rust types
-//! - **SQLx Integration**: Implements required traits for SQLx compatibility
-
 use sqlx::postgres::PgArgumentBuffer;
 use sqlx::{Encode, Postgres, Type, encode::IsNull, error::BoxDynError};
 use std::fmt::{self, Display};
 use std::iter::FromIterator;
 use time::OffsetDateTime;
 
-/// Represents a type-safe database value with proper SQL encoding.
-///
-/// This enum provides a unified way to handle different database types while maintaining
-/// type safety and proper SQL encoding for PostgreSQL. It supports all common database
-/// types and provides convenient conversion from Rust types.
-///
-/// # Variants
-///
-/// - `None` - Represents a NULL value in the database
-/// - `Str(&'static str)` - Static string reference
-/// - `String(String)` - Owned string value
-/// - `Text(String)` - Text field (same as String but semantically different)
-/// - `Int(String)` - Integer value stored as string
-/// - `Int64(String)` - 64-bit integer value stored as string
-/// - `Float(String)` - Floating point value stored as string
-/// - `Boolean(String)` - Boolean value stored as string
-/// - `DateTime(String)` - DateTime value stored as ISO8601 string
-///
-/// # Examples
-///
-/// ```rust
-/// use crate::database::values::DatabaseValue;
-///
-/// // String values
-/// let value: DatabaseValue = "hello".into();
-/// let value: DatabaseValue = String::from("world").into();
-///
-/// // Numeric values
-/// let value: DatabaseValue = 42i64.into();
-/// let value: DatabaseValue = 3.14f64.into();
-///
-/// // Boolean values
-/// let value: DatabaseValue = true.into();
-///
-/// // DateTime values
-/// let value: DatabaseValue = OffsetDateTime::now_utc().into();
-///
-/// // Null values
-/// let value = DatabaseValue::None;
-/// ```
 #[derive(Debug, Clone)]
 pub enum DatabaseValue {
-    /// Represents a NULL value in the database
-    #[allow(dead_code)]
     None,
-    /// Static string reference
     #[allow(dead_code)]
     Str(&'static str),
-    /// Owned string value
-    #[allow(dead_code)]
     String(String),
-    /// Text field (semantically different from String)
-    #[allow(dead_code)]
     Text(String),
-    /// Integer value stored as string
-    #[allow(dead_code)]
     Int(String),
-    #[allow(dead_code)]
     Int32(i32),
-    /// 64-bit integer value stored as string
-    #[allow(dead_code)]
     Int64(String),
-    /// Floating point value stored as string
-    #[allow(dead_code)]
     Float(String),
-    /// Boolean value stored as string
-    #[allow(dead_code)]
     Boolean(String),
-    /// DateTime value stored as ISO8601 string
-    #[allow(dead_code)]
     DateTime(String),
 }
 

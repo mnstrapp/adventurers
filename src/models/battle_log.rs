@@ -1,4 +1,3 @@
-use rocket::serde;
 use serde::{Deserialize, Serialize};
 use sqlx::{Error, Row, postgres::PgRow};
 use time::OffsetDateTime;

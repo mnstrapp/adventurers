@@ -1,4 +1,3 @@
-use juniper::GraphQLObject;
 use serde::{Deserialize, Serialize};
 use sqlx::{Error, Row, postgres::PgRow};
 use time::OffsetDateTime;
@@ -7,8 +6,7 @@ use crate::{
     database::traits::DatabaseResource,
     utils::time::{deserialize_offset_date_time, serialize_offset_date_time},
 };
-
-#[derive(Debug, Serialize, Deserialize, GraphQLObject, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct UserItem {
     pub id: String,
     pub user_id: String,

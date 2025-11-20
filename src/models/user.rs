@@ -1,5 +1,4 @@
 use anyhow::anyhow;
-use juniper::GraphQLObject;
 use serde::{Deserialize, Serialize};
 use sqlx::{Row, postgres::PgRow};
 use time::OffsetDateTime;
@@ -14,10 +13,10 @@ use crate::{
         passwords::hash_password,
         time::{deserialize_offset_date_time, serialize_offset_date_time},
     },
-    proto::user::User as GrpcUser,
+    proto::User as GrpcUser,
 };
 
-#[derive(Debug, Serialize, Deserialize, GraphQLObject, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct User {
     pub id: String,
     pub email: Option<String>,
@@ -86,18 +85,18 @@ impl User {
         }
     }
 
-    pub fn to_grpc(user: Self) -> GrpcUser {
+    pub fn to_grpc(&self) -> GrpcUser {
         GrpcUser {
-            id: user.id,
-            display_name: user.display_name,
-            email: user.email.unwrap_or_default(),
-            phone: user.phone.unwrap_or_default(),
-            experience_level: user.experience_level,
-            experience_points: user.experience_points,
-            experience_to_next_level: user.experience_to_next_level,
-            coins: user.coins,
-            wallet: user.wallet.map(|w| w.to_grpc()),
-            mnstrs: user.mnstrs.iter().map(|m| m.to_grpc()).collect(),
+            id: self.id.clone(),
+            display_name: self.display_name.clone(),
+            email: self.email.clone().unwrap_or_default(),
+            phone: self.phone.clone(),
+            experience_level: self.experience_level,
+            experience_points: self.experience_points,
+            experience_to_next_level: self.experience_to_next_level,
+            coins: self.coins,
+            wallet: self.wallet.clone().map(|w| w.to_grpc()),
+            mnstrs: self.mnstrs.iter().map(|m| m.to_grpc()).collect(),
         }
     }
 

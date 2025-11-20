@@ -10,6 +10,7 @@ pub mod proto {
 }
 
 mod services;
+mod models;
 mod database;
 mod utils;
 
