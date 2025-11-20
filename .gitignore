@@ -1,1 +1,6 @@
+# Build artifacts
 /target
+
+# Environment variables
+.env
+.envrc

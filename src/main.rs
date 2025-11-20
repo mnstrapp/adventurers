@@ -10,6 +10,8 @@ pub mod proto {
 }
 
 mod services;
+mod database;
+mod utils;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

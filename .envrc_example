@@ -1,0 +1,7 @@
+export DATABASE_URL=postgresql://<user>:<password>@<host>:<port>/<database>
+export TWILIO_ACCOUNT_SSID=<account_sid>
+export TWILIO_AUTH_TOKEN=<auth_token>
+export TWILIO_PHONE_NUMBER=<phone_number>
+export SENDGRID_API_KEY=<sendgrid_api_key>
+export SENDGRID_FROM_EMAIL=<sendgrid_from_email>
+export REDIS_URL=rediss://<user>:<password>@<host>:<port>/<database>
