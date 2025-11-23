@@ -89,6 +89,24 @@ impl SessionService for SessionServiceImpl {
         &self,
         _request: Request<LogoutRequest>,
     ) -> Result<Response<LogoutResponse>, Status> {
+        let request = _request.into_inner();
+        let token = request.token;
+        if token.clone().is_empty() {
+            return Err(Status::invalid_argument("Token is required"));
+        }
+
+        let mut session = match Session::find_one_by_token(token.clone()).await {
+            Ok(session) => session,
+            Err(e) => {
+                println!("[SessionServiceImpl::logout] Failed to get session: {:?}", e);
+                return Err(Status::not_found("Unable to logout"));
+            }
+        };
+        if let Some(error) = session.delete().await {
+            println!("[SessionServiceImpl::logout] Failed to delete session: {:?}", error);
+            return Err(Status::internal(error.to_string()));
+        }
+
         Ok(Response::new(LogoutResponse { success: true }))
     }
 
