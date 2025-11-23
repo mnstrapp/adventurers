@@ -8,12 +8,12 @@ use crate::{
     delete_resource_where_fields, find_all_resources_where_fields, find_one_resource_where_fields,
     insert_resource,
     models::{generated::level_xp::XP_FOR_LEVEL, mnstr::Mnstr, session::Session, wallet::Wallet},
+    proto::User as GrpcUser,
     update_resource,
     utils::{
         passwords::hash_password,
         time::{deserialize_offset_date_time, serialize_offset_date_time},
     },
-    proto::User as GrpcUser,
 };
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

@@ -1,7 +1,7 @@
+use prost_types::Timestamp;
 use serde::{self, Deserialize};
 use time::OffsetDateTime;
 use time::format_description::well_known::Rfc3339;
-use prost_types::Timestamp;
 
 #[allow(unused)]
 pub fn serialize_offset_date_time<S>(

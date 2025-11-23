@@ -2,7 +2,11 @@ use anyhow::anyhow;
 use sendgrid::{Mail, SGClient};
 use std::env;
 
-pub async fn send_email_verification_code(display_name: &str, email: &str, code: &str) -> Result<(), anyhow::Error> {
+pub async fn send_email_verification_code(
+    display_name: &str,
+    email: &str,
+    code: &str,
+) -> Result<(), anyhow::Error> {
     let api_key = match env::var("SENDGRID_API_KEY") {
         Ok(key) => key,
         Err(e) => {

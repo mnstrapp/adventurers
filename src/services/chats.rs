@@ -2,12 +2,9 @@ use tonic::{Request, Response, Status};
 
 use crate::{
     proto::{
-        chat_service_server::ChatService,
-        CreateChatRequest, CreateChatResponse,
-        GetChatRequest, GetChatResponse,
-        UpdateChatRequest, UpdateChatResponse,
-        DeleteChatRequest, DeleteChatResponse,
-        Chat as GrpcChat, User as GrpcUser,
+        Chat as GrpcChat, CreateChatRequest, CreateChatResponse, DeleteChatRequest,
+        DeleteChatResponse, GetChatRequest, GetChatResponse, UpdateChatRequest, UpdateChatResponse,
+        User as GrpcUser, chat_service_server::ChatService,
     },
     utils::time::to_prost_timestamp,
 };
@@ -110,8 +107,6 @@ impl ChatService for ChatServiceImpl {
         &self,
         request: Request<DeleteChatRequest>,
     ) -> Result<Response<DeleteChatResponse>, Status> {
-        Ok(Response::new(DeleteChatResponse {
-            success: true,
-        }))
+        Ok(Response::new(DeleteChatResponse { success: true }))
     }
 }

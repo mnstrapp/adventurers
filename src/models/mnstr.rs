@@ -8,10 +8,10 @@ use crate::{
     delete_resource_where_fields, find_all_resources_where_fields, find_one_resource_where_fields,
     insert_resource,
     models::{generated::mnstr_xp::XP_FOR_LEVEL, user::User},
-    update_resource,
-    utils::time::{deserialize_offset_date_time, serialize_offset_date_time},
     proto::Mnstr as GrpcMnstr,
+    update_resource,
     utils::time::to_prost_timestamp,
+    utils::time::{deserialize_offset_date_time, serialize_offset_date_time},
 };
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -182,7 +182,7 @@ impl Mnstr {
             max_magic: self.max_magic,
             experience_to_next_level: self.experience_to_next_level,
         }
-    }   
+    }
 
     pub async fn create(&mut self) -> Option<anyhow::Error> {
         let params = vec![

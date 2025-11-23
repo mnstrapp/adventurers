@@ -12,7 +12,11 @@ fn generate_protos() -> Result<(), Box<dyn std::error::Error>> {
         .build_server(true)
         .build_client(true)
         .compile_protos(
-            &["adventure_proto/user.proto", "adventure_proto/session.proto", "adventure_proto/chat.proto"],
+            &[
+                "adventure_proto/user.proto",
+                "adventure_proto/session.proto",
+                "adventure_proto/chat.proto",
+            ],
             &["adventure_proto"],
         )?;
     Ok(())

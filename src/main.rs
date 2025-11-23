@@ -1,23 +1,23 @@
-use tonic::{transport::Server};
+use tonic::transport::Server;
 
 use crate::proto::{
-    session_service_server::SessionServiceServer,
-    chat_service_server::ChatServiceServer,
+    chat_service_server::ChatServiceServer, session_service_server::SessionServiceServer,
 };
 
 pub mod proto {
     tonic::include_proto!("adventurers");
 }
 
-mod services;
-mod models;
 mod database;
+mod models;
+mod services;
 mod utils;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let addr = "0.0.0.0:8000".parse().unwrap();
-    let session_service = SessionServiceServer::new(services::sessions::SessionServiceImpl::default());
+    let session_service =
+        SessionServiceServer::new(services::sessions::SessionServiceImpl::default());
     let chat_service = ChatServiceServer::new(services::chats::ChatServiceImpl::default());
     println!("Server is running on {}", addr);
     Server::builder()

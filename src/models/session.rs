@@ -9,9 +9,9 @@ use crate::{
     delete_resource_where_fields, find_all_resources_where_fields, find_one_resource_where_fields,
     insert_resource,
     models::user::User,
+    proto::Session as GrpcSession,
     update_resource,
     utils::time::{deserialize_offset_date_time, serialize_offset_date_time},
-    proto::Session as GrpcSession,
 };
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

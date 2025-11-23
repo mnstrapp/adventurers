@@ -7,8 +7,8 @@ use crate::{
     delete_resource_where_fields, find_all_resources_where_fields, find_one_resource_where_fields,
     insert_resource,
     models::transaction::{Transaction, TransactionStatus, TransactionType},
-    utils::time::{deserialize_offset_date_time, serialize_offset_date_time},
     proto::Wallet as GrpcWallet,
+    utils::time::{deserialize_offset_date_time, serialize_offset_date_time},
 };
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
