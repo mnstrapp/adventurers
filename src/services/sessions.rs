@@ -114,6 +114,31 @@ impl SessionService for SessionServiceImpl {
         &self,
         _request: Request<ForgotPasswordRequest>,
     ) -> Result<Response<ForgotPasswordResponse>, Status> {
+        let request = _request.into_inner();
+        let email = request.email;
+        if email.clone().is_empty() {
+            return Err(Status::invalid_argument("Email is required"));
+        }
+        let params = vec![("email", email.clone().into())];
+        let mut user = match User::find_one_by(params, false).await {
+            Ok(user) => user,
+            Err(e) => {
+                println!("[SessionServiceImpl::forgot_password] Failed to get user: {:?}", e);
+                return Err(Status::not_found("Unable to forgot password"));
+            }
+        };
+        let code = generate_verification_code();
+        user.email_verification_code = Some(code.clone());
+        if let Some(error) = user.update().await {
+            println!("[SessionServiceImpl::forgot_password] Failed to update user: {:?}", error);
+            return Err(Status::internal(error.to_string()));
+        }
+        
+        if let Err(error) = send_email_verification_code(user.display_name.clone().as_str(), user.email.clone().unwrap().as_str(), code.as_str()).await {
+            println!("[SessionServiceImpl::forgot_password] Failed to send password reset code: {:?}", error);
+            return Err(Status::internal(error.to_string()));
+        }
+
         Ok(Response::new(ForgotPasswordResponse { success: true }))
     }
 
@@ -121,6 +146,31 @@ impl SessionService for SessionServiceImpl {
         &self,
         _request: Request<ResetPasswordRequest>,
     ) -> Result<Response<ResetPasswordResponse>, Status> {
+        let request = _request.into_inner();
+        let code = request.code;
+        if code.clone().is_empty() {
+            return Err(Status::invalid_argument("Code is required"));
+        }
+        let password = request.password;
+        if password.clone().is_empty() {
+            return Err(Status::invalid_argument("Password is required"));
+        }
+
+        let mut user = match User::find_one_by(vec![("email_verification_code", code.clone().into())], false).await {
+            Ok(user) => user,
+            Err(e) => {
+                println!("[SessionServiceImpl::reset_password] Failed to get user: {:?}", e);
+                return Err(Status::not_found("Unable to reset password"));
+            }
+        };
+
+        user.password_hash = hash_password(&password.clone());
+        user.email_verification_code = None;
+        user.email_verified = true;
+        if let Some(error) = user.update().await {
+            println!("[SessionServiceImpl::reset_password] Failed to update user: {:?}", error);
+            return Err(Status::internal(error.to_string()));
+        }
         Ok(Response::new(ResetPasswordResponse { success: true }))
     }
 
