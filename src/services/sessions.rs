@@ -1,6 +1,6 @@
-use crate::{models::user::User, proto::{
+use crate::{models::{session::Session, user::User}, proto::{
     ForgotPasswordRequest, ForgotPasswordResponse, LoginRequest, LoginResponse, LogoutRequest, LogoutResponse, RegisterRequest, RegisterResponse, ResetPasswordRequest, ResetPasswordResponse, Session as GrpcSession, User as GrpcUser, VerifyEmailRequest, VerifyEmailResponse, Wallet as GrpcWallet, session_service_server::SessionService
-}, utils::time::to_prost_timestamp};
+}, utils::{emails::send_email_verification_code, passwords::{generate_verification_code, hash_password}}};
 
 use tonic::{Request, Response, Status};
 use time::OffsetDateTime;
@@ -15,17 +15,37 @@ impl SessionService for SessionServiceImpl {
         _request: Request<RegisterRequest>,
     ) -> Result<Response<RegisterResponse>, Status> {
         let request = _request.into_inner();
+
+        let email = request.email;
+        if email.clone().is_empty() {
+            return Err(Status::invalid_argument("Email is required"));
+        }
+
+        let password = request.password;
+        if password.clone().is_empty() {
+            return Err(Status::invalid_argument("Password is required"));
+        }
+
+        let code = generate_verification_code();
+        
         let mut user = User::new(
-            Some(request.email),
+            Some(email.clone()),
             request.phone,
-            request.password,
-            request.display_name,
+            password.clone(),
+            request.display_name.clone(),
         );
+        user.email_verification_code = Some(code.clone());
         if let Some(error) = user.create().await {
             return Err(Status::internal(error.to_string()));
         }
+
+        if let Err(error) = send_email_verification_code(request.display_name.as_str(), email.as_str(), code.as_str()).await {
+            println!("[SessionServiceImpl::register] Failed to send email verification code: {:?}", error);
+            return Err(Status::internal(error.to_string()));
+        }
+
         Ok(Response::new(RegisterResponse {
-            user: Some(user.to_grpc()),
+            success: true,
         }))
     }
 
@@ -33,29 +53,35 @@ impl SessionService for SessionServiceImpl {
         &self,
         _request: Request<LoginRequest>,
     ) -> Result<Response<LoginResponse>, Status> {
+        let request = _request.into_inner();
+        let email = request.email;
+        if email.clone().is_empty() {
+            return Err(Status::invalid_argument("Email is required"));
+        }
+
+        let password = request.password;
+        if password.clone().is_empty() {
+            return Err(Status::invalid_argument("Password is required"));
+        }
+        
+        let user = User::new(Some(email.clone()), None, password.clone(), "".to_string());
+
+        let params = vec![("email", user.email.clone().unwrap().into()), ("password_hash", user.password_hash.clone().into())];
+        let user = match User::find_one_by(params, false).await {
+            Ok(user) => user,
+            Err(e) => {
+                println!("[SessionServiceImpl::login] Failed to get user by email: {:?}", e);
+                return Err(Status::not_found("Unable to login"));
+            }
+        };
+        let mut session = Session::new(user.id.clone());
+        if let Some(error) = session.create().await {
+            println!("[SessionServiceImpl::login] Failed to create session: {:?}", error);
+            return Err(Status::internal(error.to_string()));
+        }
+
         Ok(Response::new(LoginResponse {
-            session: Some(GrpcSession {
-                id: "1".to_string(),
-                user: Some(GrpcUser {
-                    id: "1".to_string(),
-                    display_name: "John Doe".to_string(),
-                    email: "john.doe@example.com".to_string(),
-                    phone: None,
-                    experience_level: 0,
-                    experience_points: 0,
-                    experience_to_next_level: 0,
-                    coins: 0,
-                    wallet: Some(GrpcWallet {
-                        id: "1".to_string(),
-                        user_id: "1".to_string(),
-                        coins: 0,
-                        transactions: Vec::new(),
-                    }),
-                    mnstrs: Vec::new(),
-                }),
-                token: "1234567890".to_string(),
-                expires_at: Some(to_prost_timestamp(OffsetDateTime::now_utc())),
-            }),
+            session: Some(session.to_grpc()),
         }))
     }
 
@@ -84,6 +110,27 @@ impl SessionService for SessionServiceImpl {
         &self,
         _request: Request<VerifyEmailRequest>,
     ) -> Result<Response<VerifyEmailResponse>, Status> {
+        let request = _request.into_inner();
+        let code = request.code;
+        if code.clone().is_empty() {
+            return Err(Status::invalid_argument("Code is required"));
+        }
+
+        let mut user = match User::find_one_by(vec![("email_verification_code", code.clone().into())], false).await {
+            Ok(user) => user,
+            Err(e) => {
+                println!("[SessionServiceImpl::verify_email] Failed to get user: {:?}", e);
+                return Err(Status::not_found("Unable to verify email"));
+            }
+        };
+
+        user.email_verified = true;
+        user.email_verification_code = None;
+        if let Some(error) = user.update().await {
+            println!("[SessionServiceImpl::verify_email] Failed to update user: {:?}", error);
+            return Err(Status::internal(error.to_string()));
+        }
+
         Ok(Response::new(VerifyEmailResponse { success: true }))
     }
 }

@@ -12,7 +12,6 @@ use crate::{
     update_resource,
     utils::time::{deserialize_offset_date_time, serialize_offset_date_time},
     proto::Session as GrpcSession,
-    utils::time::to_prost_timestamp,
 };
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -63,12 +62,12 @@ impl Session {
         }
     }
 
-    pub fn to_grpc(session: Self) -> GrpcSession {
+    pub fn to_grpc(&self) -> GrpcSession {
         GrpcSession {
-            id: session.id,
-            token: session.session_token,
-            expires_at: Some(to_prost_timestamp(session.expires_at.unwrap())),
-            user: session.user.map(|u| u.to_grpc()),
+            id: self.id.clone(),
+            token: self.session_token.clone(),
+            expires_at: self.expires_at.clone().unwrap().to_string().into(),
+            user: self.user.clone().map(|u| u.to_grpc()),
         }
     }
 

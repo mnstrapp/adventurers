@@ -152,8 +152,8 @@ impl Transaction {
             transaction_status: self.transaction_status.clone().into(),
             data: self.transaction_data.clone().unwrap_or_default(),
             error_message: self.error_message.clone().unwrap_or_default(),
-            created_at: Some(to_prost_timestamp(self.created_at.unwrap())),
-            updated_at: Some(to_prost_timestamp(self.updated_at.unwrap())),
+            created_at: self.created_at.clone().unwrap().to_string().into(),
+            updated_at: self.updated_at.clone().unwrap().to_string().into(),
         }
     }
 

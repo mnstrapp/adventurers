@@ -41,8 +41,8 @@ impl ChatService for ChatServiceImpl {
                     mnstrs: Vec::new(),
                 }],
                 messages: vec![],
-                created_at: Some(to_prost_timestamp(OffsetDateTime::now_utc())),
-                updated_at: Some(to_prost_timestamp(OffsetDateTime::now_utc())),
+                created_at: OffsetDateTime::now_utc().to_string().into(),
+                updated_at: OffsetDateTime::now_utc().to_string().into(),
                 private: false,
             }),
         }))
@@ -70,8 +70,8 @@ impl ChatService for ChatServiceImpl {
                     mnstrs: Vec::new(),
                 }],
                 messages: vec![],
-                created_at: Some(to_prost_timestamp(OffsetDateTime::now_utc())),
-                updated_at: Some(to_prost_timestamp(OffsetDateTime::now_utc())),
+                created_at: OffsetDateTime::now_utc().to_string().into(),
+                updated_at: OffsetDateTime::now_utc().to_string().into(),
                 private: false,
             }),
         }))
@@ -99,8 +99,8 @@ impl ChatService for ChatServiceImpl {
                     mnstrs: Vec::new(),
                 }],
                 messages: vec![],
-                created_at: Some(to_prost_timestamp(OffsetDateTime::now_utc())),
-                updated_at: Some(to_prost_timestamp(OffsetDateTime::now_utc())),
+                created_at: OffsetDateTime::now_utc().to_string().into(),
+                updated_at: OffsetDateTime::now_utc().to_string().into(),
                 private: false,
             }),
         }))
